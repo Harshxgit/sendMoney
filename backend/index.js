@@ -9,7 +9,7 @@ app.use(express.json());
 
 //here coming requests go into routes/index.js routes
 //all request will go to routes folder
-app.use("api/v1",rootRouter)
+app.use("/api/v1",rootRouter)
 
 
 app.listen(3000 , ()=>{

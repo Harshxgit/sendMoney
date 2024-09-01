@@ -1,7 +1,7 @@
 // this is database folder , here we create schema and connect to mongodb using mongoose
 const mongoose = require("mongoose")
-
-mongoose.connect("mongodb+srv://htpcodes:BBS4O9lF3H1I9tfS@cluster0.uyuezmt.mongodb.net/")
+const {secret} = require("./dbconnect")
+mongoose.connect(secret)
 //Create a schemea for users
 const userSchema = new mongoose.Schema({
     username : {

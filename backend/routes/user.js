@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config");
 const { authMiddleware } = require("../middleware");
 
+//check validation using zod schema
 const signupBody = zod.object({
   username: zod.string().email(),
   firstName: zod.string(),
@@ -17,14 +18,18 @@ const signupBody = zod.object({
 });
 
 
+
 //signup routes
-router.post("signup", async (req, res) => {
+router.post("/signup", async (req, res) => {
+  //first check inputs are correct or not
   const { success } = signupBody.safeParse(req.body);
   if (!success) {
     return res.status(411).json({
       message: "Email already taken/ Incorrect input",
     });
   }
+
+  //then check user are exists or not
   const existingUser = await User.findOne({
     username: req.body.username,
   });
@@ -33,18 +38,24 @@ router.post("signup", async (req, res) => {
       message: "Email already taken/Incorrect inputs",
     });
   }
+
+  //then create a user in db
   const user = await User.create({
     username: req.body.username,
     password: req.body.password,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
   });
+
   const userId = user._id;
+
+  //initialize monney to user account
   await Account.create({
     userId,
     balance: 1 + Math.random() * 10000,
   });
 
+  // create token with signin
   const token = jwt.sign(
     {
       userId,
@@ -52,12 +63,12 @@ router.post("signup", async (req, res) => {
     JWT_SECRET
   );
 
+  //send response user account created
   res.json({
     message: "User created successfully",
     token: token,
   });
 });
-
 
 // signin vaildation using zod
 const signinBody = zod.object({
@@ -66,6 +77,7 @@ const signinBody = zod.object({
 });
 
 router.post("/signin", async (req, res) => {
+  //vaildate using zod
   const { success } = signinBody.safeParse(req.body);
   if (!success) {
     return res.status(411).json({
@@ -73,6 +85,7 @@ router.post("/signin", async (req, res) => {
     });
   }
 
+  //find user they are exist or not
   const user = await User.findOne({
     username: req.body.username,
     password: req.body.password,
@@ -94,7 +107,6 @@ router.post("/signin", async (req, res) => {
     message: "Erroe while logging in",
   });
 });
-
 
 //update validate
 const updateBody = zod.object({
@@ -118,7 +130,6 @@ router.put("/", authMiddleware, async (req, res) => {
   });
 });
 
-
 //get all the user
 router.get("/bulk", async (req, res) => {
   const filter = req.query.filter || "";
@@ -138,13 +149,13 @@ router.get("/bulk", async (req, res) => {
   });
 
   res.json({
-    user:users.map(user=>({
-        username : user.username,
-        firstName : user.firstName,
-        lastName : user.lastName,
-        _id:user._id
-    }))
-  })
+    user: users.map((user) => ({
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      _id: user._id,
+    })),
+  });
 });
 
 module.exports = router;
