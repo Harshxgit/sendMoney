@@ -8,7 +8,7 @@ import { SendMoney } from "./pages/SendMoney";
 function App() {
   return (
     <>
- 
+        {/* routing */}
      <BrowserRouter>
       <Routes>
         <Route path="/signup" element={<Signup/>}/>
